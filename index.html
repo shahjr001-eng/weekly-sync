@@ -4,9 +4,69 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Weekly Sync</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 20px; max-width: 900px; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 14px; margin: 12px 0; }
+    label { display:block; font-size: 12px; margin: 10px 0 6px; color:#333; }
+    input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
+    button { padding: 10px 12px; border: 1px solid #111; background:#111; color:#fff; border-radius: 10px; cursor:pointer; }
+    button.secondary { background:#fff; color:#111; }
+    pre { background:#0b0b0b; color:#e8e8e8; padding: 12px; border-radius: 10px; overflow:auto; }
+    .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .muted { color:#666; font-size: 12px; }
+  </style>
 </head>
 <body>
   <h1>Weekly Sync</h1>
-  <p>Frontend deployed.</p>
-</body>
-</html>
+  <div class="muted">Тест подключения GitHub Pages → Apps Script (JSONP)</div>
+
+  <div class="card">
+    <h3 style="margin:0 0 8px;">Настройки</h3>
+
+    <label>WebApp URL (должен заканчиваться на /exec)</label>
+    <input id="url" placeholder="https://script.google.com/macros/s/AKfy.../exec" />
+
+    <label>SECRET_KEY (не вставляй в код репо, только сюда)</label>
+    <input id="key" placeholder="например EDATEAM" />
+
+    <div class="row" style="margin-top:12px;">
+      <button id="save" class="secondary">Сохранить</button>
+      <button id="ping">Ping</button>
+      <button id="list">List (limit=20)</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin:0 0 8px;">Ответ</h3>
+    <pre id="out">—</pre>
+  </div>
+
+<script>
+  const LS = 'weekly_sync_cfg_v1';
+
+  function getCfg(){
+    try { return JSON.parse(localStorage.getItem(LS) || '{}'); }
+    catch { return {}; }
+  }
+  function setCfg(cfg){
+    localStorage.setItem(LS, JSON.stringify(cfg));
+  }
+
+  function jsonp(url, params){
+    return new Promise((resolve, reject) => {
+      const cbName = '__cb_' + Date.now() + '_' + Math.floor(Math.random()*1e6);
+      params = params || {};
+      params.callback = cbName;
+
+      const qs = Object.entries(params)
+        .map(([k,v]) => encodeURIComponent(k) + '=' + encodeURIComponent(v ?? ''))
+        .join('&');
+
+      const src = url + (url.includes('?') ? '&' : '?') + qs;
+
+      const s = document.createElement('script');
+      s.src = src;
+      s.async = true;
+
+      const t = setTimeout(() => {
+        cleanup
