@@ -27,12 +27,14 @@
     <input id="url" placeholder="https://script.google.com/macros/s/AKfy.../exec" />
 
     <label>SECRET_KEY (не вставляй в код репо, только сюда)</label>
-    <input id="key" placeholder="например EDATEAM" />
+    <input id="key" placeholder="например Шаха Биз" />
 
     <div class="row" style="margin-top:12px;">
       <button id="save" class="secondary" type="button">Сохранить</button>
 <button id="ping" type="button">Ping</button>
 <button id="list" type="button">List (limit=20)</button>
+<button id="test" class="secondary" type="button">Тест JS</button>
+
 
     </div>
   </div>
@@ -41,6 +43,9 @@
     <h3 style="margin:0 0 8px;">Ответ</h3>
     <pre id="out">—</pre>
   </div>
+document.getElementById('test').onclick = () => {
+  show({ ok:true, test:'js_works', ts: new Date().toISOString() });
+};
 
 <script>
   const LS = 'weekly_sync_cfg_v1';
