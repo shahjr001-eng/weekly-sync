@@ -142,7 +142,7 @@ btnPing?.addEventListener('click', async () => {
 
   setOut('PING…');
   try {
-    const res = await jsonp(cfg.webapp, { action: 'ping', secret: cfg.secret });
+    const res = await jsonp(cfg.webapp, { action: 'ping', key: cfg.secret });
     setOutJson(res);
   } catch (e) {
     setOut(String(e));
