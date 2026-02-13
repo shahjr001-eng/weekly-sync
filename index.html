@@ -14,14 +14,14 @@
     input { width: min(760px, 100%); padding: 12px 14px; border-radius: 12px; border: 1px solid #d6d6d6; font-size: 16px; }
     button { padding: 12px 18px; border-radius: 14px; border: 1px solid #111; background: #fff; cursor: pointer; font-size: 16px; }
     button.primary { background: #111; color: #fff; }
-    pre { background: #111; color: #fff; padding: 14px; border-radius: 14px; overflow: auto; min-height: 70px; }
+    pre { background: #111; color: #fff; padding: 14px; border-radius: 14px; overflow: auto; min-height: 70px; white-space: pre-wrap; }
     .muted { color: #777; font-size: 13px; }
   </style>
 </head>
 
 <body>
   <h1>Weekly Sync</h1>
-  <div class="sub">Тест подключения GitHub Pages → Apps Script (JSONP)</div>
+  <div class="sub">GitHub Pages → Apps Script (JSONP)</div>
 
   <div class="card">
     <h2 style="margin:0 0 8px;">Настройки</h2>
@@ -30,7 +30,7 @@
     <input id="webapp" placeholder="https://script.google.com/macros/s/AKfy.../exec" />
 
     <label for="secret">SECRET_KEY (не вставляй в код репо, только сюда)</label>
-    <input id="secret" placeholder="например Шаха Биз" />
+    <input id="secret" placeholder="например EDATEAM" />
 
     <div class="row" style="margin-top:14px;">
       <button id="save" type="button">Сохранить</button>
@@ -40,7 +40,7 @@
     </div>
 
     <div class="muted" style="margin-top:10px;">
-      Сейчас мы проверяем, что JS исполняется и клики работают. JSONP подключим следующим шагом.
+      Если кэш мешает — просто обнови страницу и/или открой в приватном окне.
     </div>
   </div>
 
@@ -50,7 +50,6 @@
   </div>
 
   <script>
-    // ====== Мини-настройки и вывод ======
     const LS = 'weekly_sync_cfg_v1';
 
     function setOut(text) {
@@ -87,11 +86,34 @@
       if (secret && cfg.secret) secret.value = cfg.secret;
     }
 
-    // ====== Старт ======
-    window.addEventListener('DOMContentLoaded', () => {
-      console.log('JS LOADED');
-      setOut('JS LOADED');
+    // JSONP helper
+    function jsonp(url, params) {
+      return new Promise((resolve, reject) => {
+        const cbName = '_cb_' + Date.now() + '_' + Math.floor(Math.random() * 1e6);
+        const cleanup = (s, t) => {
+          clearTimeout(t);
+          try { delete window[cbName]; } catch {}
+          if (s && s.parentNode) s.parentNode.removeChild(s);
+        };
 
+        window[cbName] = (data) => { cleanup(s, t); resolve(data); };
+
+        const qs = Object.entries({ ...params, callback: cbName })
+          .map(([k, v]) => encodeURIComponent(k) + '=' + encodeURIComponent(v ?? ''))
+          .join('&');
+
+        const s = document.createElement('script');
+        s.src = url + (url.includes('?') ? '&' : '?') + qs;
+        s.async = true;
+        s.onerror = () => { cleanup(s, t); reject(new Error('JSONP load error')); };
+
+        const t = setTimeout(() => { cleanup(s, t); reject(new Error('JSONP timeout')); }, 12000);
+        document.body.appendChild(s);
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      setOut('JS LOADED');
       fillInputsFromCfg();
 
       const btnSave = document.getElementById('save');
@@ -99,76 +121,45 @@
       const btnList = document.getElementById('list');
       const btnTest = document.getElementById('test');
 
-      console.log({ btnSave, btnPing, btnList, btnTest });
-
       btnTest?.addEventListener('click', () => setOut('TEST OK'));
 
       btnSave?.addEventListener('click', () => {
         const cfg = readInputs();
         saveCfg(cfg);
-        setOutJson({ ok: true, saved: true, cfg: { webapp: cfg.webapp, secret: cfg.secret ? '***' : '' } });
+        setOutJson({ ok: true, saved: true, webapp: cfg.webapp, secret: cfg.secret ? '***' : '' });
       });
 
-      function jsonp(url, params) {
-  return new Promise((resolve, reject) => {
-    const cbName = '_cb_' + Date.now() + '_' + Math.floor(Math.random() * 1e6);
-    window[cbName] = (data) => { cleanup(); resolve(data); };
+      btnPing?.addEventListener('click', async () => {
+        const cfg = readInputs();
+        if (!cfg.webapp || !cfg.webapp.endsWith('/exec')) return setOut('Вставь WebApp URL (.../exec)');
+        if (!cfg.secret) return setOut('Вставь SECRET_KEY');
 
-    const qs = Object.entries({ ...params, callback: cbName })
-      .map(([k, v]) => encodeURIComponent(k) + '=' + encodeURIComponent(v ?? ''))
-      .join('&');
+        setOut('PING...');
+        try {
+          // важно: у тебя сейчас параметр секрета = key
+          const res = await jsonp(cfg.webapp, { action: 'ping', key: cfg.secret });
+          setOutJson(res);
+        } catch (e) {
+          setOut(String(e));
+        }
+      });
 
-    const s = document.createElement('script');
-    s.src = url + (url.includes('?') ? '&' : '?') + qs;
-    s.async = true;
+      btnList?.addEventListener('click', async () => {
+        const cfg = readInputs();
+        if (!cfg.webapp || !cfg.webapp.endsWith('/exec')) return setOut('Вставь WebApp URL (.../exec)');
+        if (!cfg.secret) return setOut('Вставь SECRET_KEY');
 
-    const t = setTimeout(() => { cleanup(); reject(new Error('JSONP timeout')); }, 12000);
-
-    function cleanup() {
-      clearTimeout(t);
-      try { delete window[cbName]; } catch {}
-      if (s.parentNode) s.parentNode.removeChild(s);
-    }
-
-    s.onerror = () => { cleanup(); reject(new Error('JSONP load error')); };
-    document.body.appendChild(s);
-  });
-}
-
-btnPing?.addEventListener('click', async () => {
- btnList?.addEventListener('click', async () => {
-  alert('LIST CLICK'); // временно для теста
-  ...
-});
-
-  const cfg = readInputs();
-  if (!cfg.webapp || !cfg.webapp.endsWith('/exec')) return setOut('Вставь WebApp URL (…/exec)');
-  if (!cfg.secret) return setOut('Вставь SECRET_KEY');
-
-  setOut('LIST...');
-  try {
-    const res = await jsonp(cfg.webapp, { action: 'list', key: cfg.secret, limit: 20 });
-    setOutJson(res);
-  } catch (e) {
-    setOut(String(e));
-  }
-});
-
-  const cfg = readInputs();
-  if (!cfg.webapp || !cfg.webapp.endsWith('/exec')) return setOut('Вставь WebApp URL (…/exec)');
-  if (!cfg.secret) return setOut('Вставь SECRET_KEY');
-
-  setOut('PING…');
-  try {
-    const res = await jsonp(cfg.webapp, { action: 'ping', key: cfg.secret });
-    setOutJson(res);
-  } catch (e) {
-    setOut(String(e));
-  }
-});
-
+        setOut('LIST...');
+        try {
+          const res = await jsonp(cfg.webapp, { action: 'list', key: cfg.secret, limit: 20 });
+          setOutJson(res);
+        } catch (e) {
+          setOut(String(e));
+        }
+      });
     });
   </script>
 </body>
 </html>
+
 
