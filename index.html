@@ -30,10 +30,10 @@
     <input id="key" placeholder="например Шаха Биз" />
 
     <div class="row" style="margin-top:12px;">
-      <button id="save" class="secondary" type="button">Сохранить</button>
+     <button id="save" type="button">Сохранить</button>
 <button id="ping" type="button">Ping</button>
 <button id="list" type="button">List (limit=20)</button>
-<button id="test" class="secondary" type="button">Тест JS</button>
+<button id="test" type="button">Тест JS</button>
 
 
     </div>
@@ -43,19 +43,35 @@
     <h3 style="margin:0 0 8px;">Ответ</h3>
     <pre id="out">—</pre>
   </div>
-
+  
   <script>
-
-  ... другой JS код ...
-
-  document.getElementById('test').onclick = function() {
-    document.getElementById('out').textContent = "JS работает";
+window.addEventListener('DOMContentLoaded', () => {
+  const out = document.getElementById('out'); // блок "Ответ"
+  const log = (t) => {
+    console.log(t);
+    if (out) out.textContent = typeof t === 'string' ? t : JSON.stringify(t, null, 2);
   };
-    
-<script>
+
+  log('JS LOADED');
+
+  // твои реальные id кнопок (мы уже знаем: ping)
+  const btnPing = document.getElementById('ping');
+  const btnList = document.getElementById('list');
+  const btnSave = document.getElementById('save');
+  const btnTest = document.getElementById('test');
+
+  console.log({ btnSave, btnPing, btnList, btnTest });
+
+  btnTest?.addEventListener('click', () => log('TEST OK'));
+  btnPing?.addEventListener('click', () => log('PING CLICK'));
+  btnList?.addEventListener('click', () => log('LIST CLICK'));
+  btnSave?.addEventListener('click', () => log('SAVE CLICK'));
+});
+</script>
   const LS = 'weekly_sync_cfg_v1';
 
-  function getCfg(){
+  function g
+etCfg(){
     try { return JSON.parse(localStorage.getItem(LS) || '{}'); }
     catch { return {}; }
   }
