@@ -136,6 +136,20 @@
 }
 
 btnPing?.addEventListener('click', async () => {
+  btnList?.addEventListener('click', async () => {
+  const cfg = readInputs();
+  if (!cfg.webapp || !cfg.webapp.endsWith('/exec')) return setOut('Вставь WebApp URL (…/exec)');
+  if (!cfg.secret) return setOut('Вставь SECRET_KEY');
+
+  setOut('LIST...');
+  try {
+    const res = await jsonp(cfg.webapp, { action: 'list', key: cfg.secret, limit: 20 });
+    setOutJson(res);
+  } catch (e) {
+    setOut(String(e));
+  }
+});
+
   const cfg = readInputs();
   if (!cfg.webapp || !cfg.webapp.endsWith('/exec')) return setOut('Вставь WebApp URL (…/exec)');
   if (!cfg.secret) return setOut('Вставь SECRET_KEY');
