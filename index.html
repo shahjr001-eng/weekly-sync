@@ -32,17 +32,21 @@
     <label for="secret">SECRET_KEY (не вставляй в код репо, только сюда)</label>
     <input id="secret" placeholder="например EDATEAM" />
 
+    <hr style="border:none;border-top:1px solid #eee;margin:18px 0;" />
+
+    <h2 style="margin:0 0 8px;">Add (запись в Weekly Sync)</h2>
+
     <label for="week">Week (пример: 2026-W06)</label>
-<input id="week" placeholder="2026-W06" />
+    <input id="week" placeholder="2026-W06" />
 
-<label for="person">Person</label>
-<input id="person" placeholder="Дима" />
+    <label for="person">Person</label>
+    <input id="person" placeholder="Дима" />
 
-<label for="score">Score total (число)</label>
-<input id="score" placeholder="8" />
+    <label for="score">Score total (число)</label>
+    <input id="score" placeholder="8" />
 
-<label for="notes">Notes</label>
-<input id="notes" placeholder="коротко: что сделано" />
+    <label for="notes">Notes</label>
+    <input id="notes" placeholder="коротко: что сделано / выводы" />
 
     <div class="row" style="margin-top:14px;">
       <button id="save" type="button">Сохранить</button>
@@ -53,7 +57,7 @@
     </div>
 
     <div class="muted" style="margin-top:10px;">
-      Если кэш мешает — просто обнови страницу и/или открой в приватном окне.
+      Если кэш мешает — открой страницу в приватном окне Safari.
     </div>
   </div>
 
@@ -88,6 +92,10 @@
       return {
         webapp: (document.getElementById('webapp')?.value || '').trim(),
         secret: (document.getElementById('secret')?.value || '').trim(),
+        week: (document.getElementById('week')?.value || '').trim(),
+        person: (document.getElementById('person')?.value || '').trim(),
+        score: (document.getElementById('score')?.value || '').trim(),
+        notes: (document.getElementById('notes')?.value || '').trim(),
       };
     }
 
@@ -95,8 +103,11 @@
       const cfg = getCfg();
       const webapp = document.getElementById('webapp');
       const secret = document.getElementById('secret');
+      const person = document.getElementById('person');
+
       if (webapp && cfg.webapp) webapp.value = cfg.webapp;
       if (secret && cfg.secret) secret.value = cfg.secret;
+      if (person && cfg.person) person.value = cfg.person;
     }
 
     // JSONP helper
@@ -125,6 +136,12 @@
       });
     }
 
+    async function doList(cfg) {
+      const res = await jsonp(cfg.webapp, { action: 'list', key: cfg.secret, limit: 20 });
+      setOutJson(res);
+      return res;
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
       setOut('JS LOADED');
       fillInputsFromCfg();
@@ -132,15 +149,16 @@
       const btnSave = document.getElementById('save');
       const btnPing = document.getElementById('ping');
       const btnList = document.getElementById('list');
-      const btnAdd = document.getElementById('add');
+      const btnAdd  = document.getElementById('add');
       const btnTest = document.getElementById('test');
 
       btnTest?.addEventListener('click', () => setOut('TEST OK'));
 
       btnSave?.addEventListener('click', () => {
         const cfg = readInputs();
-        saveCfg(cfg);
-        setOutJson({ ok: true, saved: true, webapp: cfg.webapp, secret: cfg.secret ? '***' : '' });
+        // сохраняем webapp+secret+person (week/score/notes не сохраняем)
+        saveCfg({ webapp: cfg.webapp, secret: cfg.secret, person: cfg.person });
+        setOutJson({ ok: true, saved: true, webapp: cfg.webapp, secret: cfg.secret ? '***' : '', person: cfg.person });
       });
 
       btnPing?.addEventListener('click', async () => {
@@ -150,7 +168,6 @@
 
         setOut('PING...');
         try {
-          // важно: у тебя сейчас параметр секрета = key
           const res = await jsonp(cfg.webapp, { action: 'ping', key: cfg.secret });
           setOutJson(res);
         } catch (e) {
@@ -165,44 +182,38 @@
 
         setOut('LIST...');
         try {
-          const res = await jsonp(cfg.webapp, { action: 'list', key: cfg.secret, limit: 20 });
-          setOutJson(res);
+          await doList(cfg);
         } catch (e) {
           setOut(String(e));
         }
       });
+
       btnAdd?.addEventListener('click', async () => {
-  const cfg = readInputs();
-  if (!cfg.webapp || !cfg.webapp.endsWith('/exec')) return setOut('Вставь WebApp URL (.../exec)');
-  if (!cfg.secret) return setOut('Вставь SECRET_KEY');
+        const cfg = readInputs();
+        if (!cfg.webapp || !cfg.webapp.endsWith('/exec')) return setOut('Вставь WebApp URL (.../exec)');
+        if (!cfg.secret) return setOut('Вставь SECRET_KEY');
+        if (!cfg.week) return setOut('Заполни week (пример: 2026-W06)');
 
-  const week  = (document.getElementById('week')?.value || '').trim();
-  const person = (document.getElementById('person')?.value || '').trim();
-  const score  = (document.getElementById('score')?.value || '').trim();
-  const notes  = (document.getElementById('notes')?.value || '').trim();
+        setOut('ADD...');
+        try {
+          const res = await jsonp(cfg.webapp, {
+            action: 'add',
+            key: cfg.secret,
+            week: cfg.week,
+            person: cfg.person,
+            score_total: cfg.score,
+            notes: cfg.notes,
+            source: 'web'
+          });
+          // покажем ответ add
+          setOutJson(res);
 
-  if (!week) return setOut('Заполни week (пример: 2026-W06)');
-
-  setOut('ADD...');
-  try {
-    const res = await jsonp(cfg.webapp, {
-      action: 'add',
-      key: cfg.secret,
-      week,
-      person,
-      score_total: score,
-      notes,
-      source: 'web'
-    });
-    setOutJson(res);
-
-    // сразу обновляем список
-    const listRes = await jsonp(cfg.webapp, { action: 'list', key: cfg.secret, limit: 20 });
-    setOutJson(listRes);
-  } catch (e) {
-    setOut(String(e));
-  }
-});
+          // и сразу подтянем список, чтобы увидеть, что запись появилась
+          await doList(cfg);
+        } catch (e) {
+          setOut(String(e));
+        }
+      });
     });
   </script>
 </body>
