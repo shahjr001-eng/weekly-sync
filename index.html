@@ -136,7 +136,11 @@
 }
 
 btnPing?.addEventListener('click', async () => {
-  btnList?.addEventListener('click', async () => {
+ btnList?.addEventListener('click', async () => {
+  alert('LIST CLICK'); // временно для теста
+  ...
+});
+
   const cfg = readInputs();
   if (!cfg.webapp || !cfg.webapp.endsWith('/exec')) return setOut('Вставь WebApp URL (…/exec)');
   if (!cfg.secret) return setOut('Вставь SECRET_KEY');
