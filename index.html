@@ -3,80 +3,312 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Weekly Sync</title>
+  <title>Еда тим трекер</title>
   <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 28px; }
-    h1 { margin: 0 0 10px; font-size: 44px; }
-    .sub { color: #666; margin-bottom: 22px; }
-    .card { border: 1px solid #e5e5e5; border-radius: 14px; padding: 18px; margin: 14px 0; }
-    .row { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
-    label { display: block; font-size: 14px; color: #444; margin: 14px 0 6px; }
-    input { width: min(760px, 100%); padding: 12px 14px; border-radius: 12px; border: 1px solid #d6d6d6; font-size: 16px; }
-    button { padding: 12px 18px; border-radius: 14px; border: 1px solid #111; background: #fff; cursor: pointer; font-size: 16px; }
-    button.primary { background: #111; color: #fff; }
-    pre { background: #111; color: #fff; padding: 14px; border-radius: 14px; overflow: auto; min-height: 70px; white-space: pre-wrap; }
-    .muted { color: #777; font-size: 13px; }
+    :root{
+      --bg:#0b0b10;
+      --card:#12121a;
+      --line:rgba(255,255,255,.12);
+      --muted:rgba(255,255,255,.65);
+      --text:#fff;
+      --accent:#7c3aed;
+      --accent2:#22c55e;
+      --danger:#ef4444;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 800px at 10% 10%, rgba(124,58,237,.35), transparent 55%),
+                  radial-gradient(1000px 700px at 90% 20%, rgba(34,197,94,.22), transparent 55%),
+                  radial-gradient(900px 700px at 40% 90%, rgba(59,130,246,.18), transparent 60%),
+                  var(--bg);
+      color:var(--text);
+      min-height:100vh;
+    }
+    a{color:inherit}
+    .wrap{max-width:980px;margin:0 auto;padding:26px 18px 60px}
+    .topbar{
+      display:flex;align-items:center;justify-content:space-between;
+      gap:12px;margin-bottom:18px;
+    }
+    .brand{
+      display:flex;align-items:center;gap:10px;
+      font-weight:800;letter-spacing:.2px;
+    }
+    .pill{
+      font-size:12px;
+      padding:6px 10px;border:1px solid var(--line);
+      border-radius:999px;color:var(--muted);
+      background:rgba(255,255,255,.04)
+    }
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:18px;
+      box-shadow: 0 12px 40px rgba(0,0,0,.35);
+      backdrop-filter: blur(8px);
+    }
+    .grid{display:grid;gap:14px}
+    .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+    .btn{
+      border:1px solid rgba(255,255,255,.18);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      padding:12px 16px;
+      border-radius:14px;
+      cursor:pointer;
+      font-size:15px;
+      transition: transform .05s ease, background .15s ease, border-color .15s ease;
+      user-select:none;
+    }
+    .btn:active{transform: translateY(1px)}
+    .btn.primary{
+      background: linear-gradient(135deg, rgba(124,58,237,.95), rgba(34,197,94,.55));
+      border-color: rgba(255,255,255,.28);
+    }
+    .btn.ghost{background:transparent}
+    .btn.small{padding:10px 12px;font-size:14px;border-radius:12px}
+    .btn.danger{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.35)}
+    .muted{color:var(--muted);font-size:13px;line-height:1.45}
+    h1{margin:10px 0 6px;font-size:46px;letter-spacing:-.7px}
+    h2{margin:0 0 8px;font-size:18px}
+    .hero{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap:14px;
+      align-items:stretch;
+    }
+    @media (max-width:860px){
+      .hero{grid-template-columns:1fr}
+      h1{font-size:38px}
+    }
+    .kicker{
+      display:inline-flex;gap:8px;align-items:center;
+      padding:6px 10px;border:1px solid var(--line);
+      border-radius:999px;background:rgba(255,255,255,.04);
+      color:var(--muted);font-size:13px;
+    }
+    .bigtext{font-size:16px;color:rgba(255,255,255,.82);line-height:1.5;margin-top:10px}
+    .fun{
+      display:flex;flex-direction:column;justify-content:space-between;gap:12px;
+    }
+    .poster{
+      border-radius:16px;
+      border:1px solid var(--line);
+      background: radial-gradient(500px 220px at 30% 30%, rgba(124,58,237,.35), transparent 55%),
+                  radial-gradient(460px 220px at 70% 70%, rgba(34,197,94,.22), transparent 60%),
+                  rgba(255,255,255,.04);
+      padding:14px;
+      position:relative;
+      overflow:hidden;
+      min-height:220px;
+    }
+    .sticker{
+      position:absolute;right:14px;top:14px;
+      border:1px solid rgba(255,255,255,.22);
+      background:rgba(0,0,0,.35);
+      padding:6px 10px;border-radius:999px;
+      font-size:12px;color:rgba(255,255,255,.85);
+    }
+    .ascii{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      white-space:pre;
+      font-size:12px;
+      color:rgba(255,255,255,.85);
+      margin:0;
+      line-height:1.25;
+    }
+    .field label{display:block;font-size:13px;color:rgba(255,255,255,.78);margin:12px 0 6px}
+    .field input{
+      width:100%;
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.16);
+      background:rgba(0,0,0,.25);
+      color:var(--text);
+      font-size:15px;
+      outline:none;
+    }
+    .field input:focus{border-color:rgba(124,58,237,.55)}
+    .twoCol{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media (max-width:760px){.twoCol{grid-template-columns:1fr}}
+    pre#out{
+      background:rgba(0,0,0,.45);
+      border:1px solid rgba(255,255,255,.14);
+      padding:14px;border-radius:16px;
+      min-height:74px;
+      white-space:pre-wrap;
+      overflow:auto;
+      margin:0;
+      color:rgba(255,255,255,.92);
+    }
+    .hidden{display:none !important}
+    .toast{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(0,0,0,.25);
+      color:rgba(255,255,255,.85);
+      font-size:13px;
+    }
+    .toast.ok{border-color:rgba(34,197,94,.35);background:rgba(34,197,94,.10)}
+    .toast.err{border-color:rgba(239,68,68,.35);background:rgba(239,68,68,.10)}
+    .navBtns{display:flex;gap:10px;flex-wrap:wrap}
   </style>
 </head>
 
 <body>
-  <h1>Weekly Sync</h1>
-  <div class="sub">GitHub Pages → Apps Script (JSONP)</div>
-
-  <div class="card">
-    <h2 style="margin:0 0 8px;">Настройки</h2>
-
-    <label for="webapp">WebApp URL (должен заканчиваться на /exec)</label>
-    <input id="webapp" placeholder="https://script.google.com/macros/s/AKfy.../exec" />
-
-    <label for="secret">SECRET_KEY (не вставляй в код репо, только сюда)</label>
-    <input id="secret" placeholder="например EDATEAM" />
-
-    <hr style="border:none;border-top:1px solid #eee;margin:18px 0;" />
-
-    <h2 style="margin:0 0 8px;">Add (запись в Weekly Sync)</h2>
-
-    <label for="week">Week (пример: 2026-W06)</label>
-    <input id="week" placeholder="2026-W06" />
-
-    <label for="person">Person</label>
-    <input id="person" placeholder="Дима" />
-
-    <label for="score">Score total (число)</label>
-    <input id="score" placeholder="8" />
-
-    <label for="notes">Notes</label>
-    <input id="notes" placeholder="коротко: что сделано / выводы" />
-
-    <div class="row" style="margin-top:14px;">
-      <button id="save" type="button">Сохранить</button>
-      <button id="ping" type="button" class="primary">Ping</button>
-      <button id="list" type="button" class="primary">List (limit=20)</button>
-      <button id="add" type="button" class="primary">Add</button>
-      <button id="test" type="button">Тест JS</button>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <span style="font-size:20px">🍔</span>
+        <span>Еда тим трекер</span>
+        <span class="pill">weekly sync</span>
+      </div>
+      <div class="navBtns">
+        <button id="goHomeTop" class="btn small ghost">Домой</button>
+        <button id="goAppTop" class="btn small">Открыть трекер</button>
+      </div>
     </div>
 
-    <div class="muted" style="margin-top:10px;">
-      Если кэш мешает — открой страницу в приватном окне Safari.
-    </div>
-  </div>
+    <!-- SCREEN 1: HERO -->
+    <section id="screenHome">
+      <div class="hero">
+        <div class="card">
+          <div class="kicker">😼 кринж-режим: ON · 🥗 дисциплина: почти ON</div>
+          <h1>Еда тим трекер</h1>
+          <div class="bigtext">
+            Мини-сервис для Weekly Sync: быстро фиксируем неделю, баллы и заметки — без лишних платформ и боли.
+          </div>
 
-  <div class="card">
-    <h2 style="margin:0 0 8px;">Ответ</h2>
-    <pre id="out">-</pre>
+          <div class="row" style="margin-top:16px">
+            <button id="goApp" type="button" class="btn primary">Поехали → в трекер</button>
+            <button id="pingFromHome" type="button" class="btn">Ping (проверка связи)</button>
+          </div>
+
+          <div class="toast" id="homeToast">Готов. Жми “Поехали”.</div>
+        </div>
+
+        <div class="card fun">
+          <div class="poster">
+            <div class="sticker">EDATEAM</div>
+            <pre class="ascii">
+        ┌──────────────────────────────┐
+        │   🍕  ЕДА ТИМ  TRACKER  🥤   │
+        │  "Съел — запиши. Выиграл —   │
+        │     запиши. Не ной."         │
+        │                              │
+        │   🧠 дисциплина > мотивация  │
+        │   🥗 простая еда             │
+        │   📈 прогресс по неделям     │
+        └──────────────────────────────┘
+
+              (\__/)
+              ( •_•)  <  "Weekly Sync?"
+              / >🍩    yes.
+            </pre>
+          </div>
+          <div class="muted">
+            Да, это кринж. Зато запоминается на звонке.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCREEN 2: APP -->
+    <section id="screenApp" class="hidden">
+      <div class="grid">
+        <div class="card">
+          <div class="row" style="justify-content:space-between">
+            <div>
+              <h2 style="margin:0">Трекер</h2>
+              <div class="muted">GitHub Pages → Apps Script (JSONP) · auth: key</div>
+            </div>
+            <div class="row">
+              <button id="goHome" class="btn small ghost" type="button">← Домой</button>
+              <button id="test" class="btn small" type="button">Тест JS</button>
+            </div>
+          </div>
+
+          <div class="twoCol" style="margin-top:10px">
+            <div class="field">
+              <label for="webapp">WebApp URL (заканчивается на /exec)</label>
+              <input id="webapp" placeholder="https://script.google.com/macros/s/AKfy.../exec" />
+            </div>
+            <div class="field">
+              <label for="secret">SECRET_KEY (key)</label>
+              <input id="secret" placeholder="например EDATEAM" />
+            </div>
+          </div>
+
+          <div class="twoCol">
+            <div class="field">
+              <label for="week">Week (пример: 2026-W06)</label>
+              <input id="week" placeholder="2026-W06" />
+            </div>
+            <div class="field">
+              <label for="person">Person</label>
+              <input id="person" placeholder="Дима" />
+            </div>
+          </div>
+
+          <div class="twoCol">
+            <div class="field">
+              <label for="score">Score total (число)</label>
+              <input id="score" placeholder="8" />
+            </div>
+            <div class="field">
+              <label for="notes">Notes</label>
+              <input id="notes" placeholder="коротко: что сделано / выводы" />
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:12px">
+            <button id="save" type="button" class="btn">Сохранить</button>
+            <button id="ping" type="button" class="btn primary">Ping</button>
+            <button id="list" type="button" class="btn primary">List (limit=20)</button>
+            <button id="add" type="button" class="btn primary">Add</button>
+            <button id="clearOut" type="button" class="btn danger">Очистить ответ</button>
+          </div>
+
+          <div class="toast" id="appToast">Заполни WebApp URL + key → Ping.</div>
+        </div>
+
+        <div class="card">
+          <h2 style="margin:0 0 8px;">Ответ</h2>
+          <pre id="out">-</pre>
+        </div>
+      </div>
+    </section>
   </div>
 
   <script>
-    const LS = 'weekly_sync_cfg_v1';
+    // =========================
+    // Storage + UI helpers
+    // =========================
+    const LS = 'weekly_sync_cfg_v2';
+
+    function $(id){ return document.getElementById(id); }
 
     function setOut(text) {
-      const out = document.getElementById('out');
+      const out = $('out');
       if (!out) return;
       out.textContent = String(text);
     }
 
     function setOutJson(obj) {
       setOut(typeof obj === 'string' ? obj : JSON.stringify(obj, null, 2));
+    }
+
+    function toast(el, msg, kind){
+      if (!el) return;
+      el.textContent = msg;
+      el.classList.remove('ok','err');
+      if (kind === 'ok') el.classList.add('ok');
+      if (kind === 'err') el.classList.add('err');
     }
 
     function getCfg() {
@@ -90,112 +322,166 @@
 
     function readInputs() {
       return {
-        webapp: (document.getElementById('webapp')?.value || '').trim(),
-        secret: (document.getElementById('secret')?.value || '').trim(),
-        week: (document.getElementById('week')?.value || '').trim(),
-        person: (document.getElementById('person')?.value || '').trim(),
-        score: (document.getElementById('score')?.value || '').trim(),
-        notes: (document.getElementById('notes')?.value || '').trim(),
+        webapp: ($('webapp')?.value || '').trim(),
+        secret: ($('secret')?.value || '').trim(),
+        week: ($('week')?.value || '').trim(),
+        person: ($('person')?.value || '').trim(),
+        score: ($('score')?.value || '').trim(),
+        notes: ($('notes')?.value || '').trim(),
       };
     }
 
     function fillInputsFromCfg() {
       const cfg = getCfg();
-      const webapp = document.getElementById('webapp');
-      const secret = document.getElementById('secret');
-      const person = document.getElementById('person');
-
-      if (webapp && cfg.webapp) webapp.value = cfg.webapp;
-      if (secret && cfg.secret) secret.value = cfg.secret;
-      if (person && cfg.person) person.value = cfg.person;
+      if ($('webapp') && cfg.webapp) $('webapp').value = cfg.webapp;
+      if ($('secret') && cfg.secret) $('secret').value = cfg.secret;
+      if ($('person') && cfg.person) $('person').value = cfg.person;
     }
 
-    // JSONP helper
+    // =========================
+    // JSONP
+    // =========================
     function jsonp(url, params) {
       return new Promise((resolve, reject) => {
         const cbName = '_cb_' + Date.now() + '_' + Math.floor(Math.random() * 1e6);
-        const cleanup = (s, t) => {
+
+        const s = document.createElement('script');
+        const t = setTimeout(() => { cleanup(); reject(new Error('JSONP timeout')); }, 12000);
+
+        function cleanup() {
           clearTimeout(t);
           try { delete window[cbName]; } catch {}
-          if (s && s.parentNode) s.parentNode.removeChild(s);
-        };
+          if (s.parentNode) s.parentNode.removeChild(s);
+        }
 
-        window[cbName] = (data) => { cleanup(s, t); resolve(data); };
+        window[cbName] = (data) => { cleanup(); resolve(data); };
 
         const qs = Object.entries({ ...params, callback: cbName })
           .map(([k, v]) => encodeURIComponent(k) + '=' + encodeURIComponent(v ?? ''))
           .join('&');
 
-        const s = document.createElement('script');
         s.src = url + (url.includes('?') ? '&' : '?') + qs;
         s.async = true;
-        s.onerror = () => { cleanup(s, t); reject(new Error('JSONP load error')); };
+        s.onerror = () => { cleanup(); reject(new Error('JSONP load error')); };
 
-        const t = setTimeout(() => { cleanup(s, t); reject(new Error('JSONP timeout')); }, 12000);
         document.body.appendChild(s);
       });
     }
 
-    async function doList(cfg) {
-      const res = await jsonp(cfg.webapp, { action: 'list', key: cfg.secret, limit: 20 });
+    async function doList(cfg){
+      const res = await jsonp(cfg.webapp, { action:'list', key: cfg.secret, limit: 20 });
       setOutJson(res);
       return res;
     }
 
+    // =========================
+    // Navigation (two screens)
+    // =========================
+    function showHome(){
+      $('screenHome').classList.remove('hidden');
+      $('screenApp').classList.add('hidden');
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+    function showApp(){
+      $('screenHome').classList.add('hidden');
+      $('screenApp').classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+
+    // =========================
+    // Boot
+    // =========================
     window.addEventListener('DOMContentLoaded', () => {
-      setOut('JS LOADED');
+      // nav
+      $('goApp')?.addEventListener('click', showApp);
+      $('goAppTop')?.addEventListener('click', showApp);
+      $('goHome')?.addEventListener('click', showHome);
+      $('goHomeTop')?.addEventListener('click', showHome);
+
+      // fill saved config
       fillInputsFromCfg();
+      setOut('JS LOADED');
 
-      const btnSave = document.getElementById('save');
-      const btnPing = document.getElementById('ping');
-      const btnList = document.getElementById('list');
-      const btnAdd  = document.getElementById('add');
-      const btnTest = document.getElementById('test');
+      const homeToast = $('homeToast');
+      const appToast  = $('appToast');
 
-      btnTest?.addEventListener('click', () => setOut('TEST OK'));
+      // simple helper to validate
+      function ensureCfg(cfg){
+        if (!cfg.webapp || !cfg.webapp.endsWith('/exec')) return { ok:false, msg:'Вставь WebApp URL (.../exec)' };
+        if (!cfg.secret) return { ok:false, msg:'Вставь SECRET_KEY (key)' };
+        return { ok:true };
+      }
 
-      btnSave?.addEventListener('click', () => {
+      // Home Ping (quick check)
+      $('pingFromHome')?.addEventListener('click', async () => {
         const cfg = readInputs();
-        // сохраняем webapp+secret+person (week/score/notes не сохраняем)
+        const v = ensureCfg(cfg);
+        if (!v.ok){
+          toast(homeToast, v.msg + ' (это на 2-м экране)', 'err');
+          return;
+        }
+        toast(homeToast, 'PING...', '');
+        try{
+          const res = await jsonp(cfg.webapp, { action:'ping', key: cfg.secret });
+          toast(homeToast, res?.ok ? 'Связь ок ✅' : ('Ответ: ' + JSON.stringify(res)), res?.ok ? 'ok' : 'err');
+        }catch(e){
+          toast(homeToast, String(e), 'err');
+        }
+      });
+
+      // App buttons
+      $('test')?.addEventListener('click', () => toast(appToast, 'TEST OK', 'ok'));
+
+      $('clearOut')?.addEventListener('click', () => setOut('-'));
+
+      $('save')?.addEventListener('click', () => {
+        const cfg = readInputs();
         saveCfg({ webapp: cfg.webapp, secret: cfg.secret, person: cfg.person });
-        setOutJson({ ok: true, saved: true, webapp: cfg.webapp, secret: cfg.secret ? '***' : '', person: cfg.person });
+        toast(appToast, 'Сохранено ✅ (webapp + key + person)', 'ok');
       });
 
-      btnPing?.addEventListener('click', async () => {
+      $('ping')?.addEventListener('click', async () => {
         const cfg = readInputs();
-        if (!cfg.webapp || !cfg.webapp.endsWith('/exec')) return setOut('Вставь WebApp URL (.../exec)');
-        if (!cfg.secret) return setOut('Вставь SECRET_KEY');
+        const v = ensureCfg(cfg);
+        if (!v.ok){ toast(appToast, v.msg, 'err'); return; }
 
+        toast(appToast, 'PING...', '');
         setOut('PING...');
-        try {
-          const res = await jsonp(cfg.webapp, { action: 'ping', key: cfg.secret });
+        try{
+          const res = await jsonp(cfg.webapp, { action:'ping', key: cfg.secret });
           setOutJson(res);
-        } catch (e) {
+          toast(appToast, res?.ok ? 'Ping ok ✅' : 'Ping ответил ошибкой', res?.ok ? 'ok' : 'err');
+        }catch(e){
           setOut(String(e));
+          toast(appToast, String(e), 'err');
         }
       });
 
-      btnList?.addEventListener('click', async () => {
+      $('list')?.addEventListener('click', async () => {
         const cfg = readInputs();
-        if (!cfg.webapp || !cfg.webapp.endsWith('/exec')) return setOut('Вставь WebApp URL (.../exec)');
-        if (!cfg.secret) return setOut('Вставь SECRET_KEY');
+        const v = ensureCfg(cfg);
+        if (!v.ok){ toast(appToast, v.msg, 'err'); return; }
 
+        toast(appToast, 'LIST...', '');
         setOut('LIST...');
-        try {
+        try{
           await doList(cfg);
-        } catch (e) {
+          toast(appToast, 'List ok ✅', 'ok');
+        }catch(e){
           setOut(String(e));
+          toast(appToast, String(e), 'err');
         }
       });
 
-      btnAdd?.addEventListener('click', async () => {
+      $('add')?.addEventListener('click', async () => {
         const cfg = readInputs();
-        if (!cfg.webapp || !cfg.webapp.endsWith('/exec')) return setOut('Вставь WebApp URL (.../exec)');
-        if (!cfg.secret) return setOut('Вставь SECRET_KEY');
-        if (!cfg.week) return setOut('Заполни week (пример: 2026-W06)');
+        const v = ensureCfg(cfg);
+        if (!v.ok){ toast(appToast, v.msg, 'err'); return; }
+        if (!cfg.week){ toast(appToast, 'Заполни week (пример: 2026-W06)', 'err'); return; }
 
+        toast(appToast, 'ADD...', '');
         setOut('ADD...');
-        try {
+        try{
           const res = await jsonp(cfg.webapp, {
             action: 'add',
             key: cfg.secret,
@@ -205,18 +491,24 @@
             notes: cfg.notes,
             source: 'web'
           });
-          // покажем ответ add
           setOutJson(res);
+          toast(appToast, res?.ok ? 'Add ok ✅' : ('Add: ' + (res?.error || 'ошибка')), res?.ok ? 'ok' : 'err');
 
-          // и сразу подтянем список, чтобы увидеть, что запись появилась
+          // refresh list so it looks "product"
           await doList(cfg);
-        } catch (e) {
+        }catch(e){
           setOut(String(e));
+          toast(appToast, String(e), 'err');
         }
       });
+
+      // Default screen
+      showHome();
+      toast(homeToast, 'Готов. Жми “Поехали”.', '');
     });
   </script>
 </body>
 </html>
+
 
 
