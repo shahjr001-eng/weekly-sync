@@ -132,6 +132,7 @@
       const btnSave = document.getElementById('save');
       const btnPing = document.getElementById('ping');
       const btnList = document.getElementById('list');
+      const btnAdd = document.getElementById('add');
       const btnTest = document.getElementById('test');
 
       btnTest?.addEventListener('click', () => setOut('TEST OK'));
@@ -170,6 +171,38 @@
           setOut(String(e));
         }
       });
+      btnAdd?.addEventListener('click', async () => {
+  const cfg = readInputs();
+  if (!cfg.webapp || !cfg.webapp.endsWith('/exec')) return setOut('Вставь WebApp URL (.../exec)');
+  if (!cfg.secret) return setOut('Вставь SECRET_KEY');
+
+  const week  = (document.getElementById('week')?.value || '').trim();
+  const person = (document.getElementById('person')?.value || '').trim();
+  const score  = (document.getElementById('score')?.value || '').trim();
+  const notes  = (document.getElementById('notes')?.value || '').trim();
+
+  if (!week) return setOut('Заполни week (пример: 2026-W06)');
+
+  setOut('ADD...');
+  try {
+    const res = await jsonp(cfg.webapp, {
+      action: 'add',
+      key: cfg.secret,
+      week,
+      person,
+      score_total: score,
+      notes,
+      source: 'web'
+    });
+    setOutJson(res);
+
+    // сразу обновляем список
+    const listRes = await jsonp(cfg.webapp, { action: 'list', key: cfg.secret, limit: 20 });
+    setOutJson(listRes);
+  } catch (e) {
+    setOut(String(e));
+  }
+});
     });
   </script>
 </body>
